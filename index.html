@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cruscotto Direzionale</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-main: #c9d1d9;
+            --accent-green: #2ea043;
+            --accent-blue: #388bfd;
+            --accent-purple: #8957e5;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background-color: var(--card-bg);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #30363d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5vh;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        .header .data-oggi {
+            font-size: 1.8vh;
+            color: #8b949e;
+            margin-top: 5px;
+        }
+
+        .container {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #30363d;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card-title {
+            font-size: 1.6vh;
+            text-transform: uppercase;
+            color: #8b949e;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .valore-totale {
+            font-size: 5.5vh;
+            font-weight: bold;
+            color: var(--accent-green);
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 15px rgba(46, 160, 67, 0.4);
+        }
+
+        .grid-dati {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .dato-box {
+            background-color: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dato-valore {
+            font-size: 3vh;
+            color: #ffffff;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .btn-aggiorna {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 2vh;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: auto;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(56, 139, 253, 0.4);
+        }
+
+        .btn-aggiorna:active {
+            background-color: #1f6feb;
+            transform: scale(0.98);
+        }
+
+        /* Modale personalizzato per gli avvisi */
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: var(--card-bg); border: 2px solid var(--accent-blue);
+            border-radius: 10px; padding: 20px; text-align: center; width: 80%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📊 CRUSCOTTO DIREZIONALE</h1>
+        <div class="data-oggi" id="label-data">Caricamento...</div>
+    </div>
+
+    <div class="container">
+        
+        <div class="card" style="border-color: var(--accent-green);">
+            <div class="card-title" style="text-align: center;">Incasso di Oggi</div>
+            <div class="valore-totale" id="ui-totale">€ 0,00</div>
+        </div>
+
+        <div class="grid-dati">
+            <div class="dato-box">
+                <div class="card-title">Contanti</div>
+                <div class="dato-valore" id="ui-contanti" style="color: var(--accent-purple);">€ 0,00</div>
+            </div>
+            <div class="dato-box">
+                <div class="card-title">POS / Carte</div>
+                <div class="dato-valore" id="ui-pos" style="color: var(--accent-blue);">€ 0,00</div>
+            </div>
+        </div>
+
+        <div class="grid-dati">
+            <div class="dato-box">
+                <div class="card-title">Scontrini</div>
+                <div class="dato-valore" id="ui-scontrini">0</div>
+            </div>
+            <div class="dato-box">
+                <div class="card-title">Ticket Medio</div>
+                <div class="dato-valore" id="ui-media">€ 0,00</div>
+            </div>
+        </div>
+
+        <button class="btn-aggiorna" onclick="scaricaDatiLive()">🔄 AGGIORNA DATI</button>
+    </div>
+
+    <div class="modal-overlay" id="modal-avviso">
+        <div class="modal-box">
+            <div id="testo-avviso" style="font-size: 2vh; margin-bottom: 20px;"></div>
+            <button class="btn-aggiorna" style="margin: 0; padding: 10px;" onclick="document.getElementById('modal-avviso').style.display='none'">CHIUDI</button>
+        </div>
+    </div>
+
+    <script>
+        // La stessa URL del tuo gestionale
+        const FIREBASE_URL = "https://fidelity-gestionale-default-rtdb.europe-west1.firebasedatabase.app";
+
+        // Formatta la data per mostrare es. "Venerdì 6 Marzo 2026"
+        function impostaDataOggi() {
+            const opzioni = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dataFormattata = new Date().toLocaleDateString('it-IT', opzioni);
+            document.getElementById('label-data').textContent = dataFormattata.toUpperCase();
+        }
+
+        // Recupera la stringa YYYY-MM-DD per interrogare Firebase
+        function getOggiString() {
+            let d = new Date();
+            let anno = d.getFullYear();
+            let mese = String(d.getMonth() + 1).padStart(2, '0');
+            let giorno = String(d.getDate()).padStart(2, '0');
+            return `${anno}-${mese}-${giorno}`;
+        }
+
+        // Funzione per scaricare e calcolare i dati
+        async function scaricaDatiLive() {
+            let bottone = document.querySelector('.btn-aggiorna');
+            bottone.innerHTML = '⏳ SCARICAMENTO...';
+            
+            if (!navigator.onLine) {
+                mostraAvviso("Sei offline! Controlla la tua connessione internet.");
+                bottone.innerHTML = '🔄 AGGIORNA DATI';
+                return;
+            }
+
+            const oggi = getOggiString();
+            const url = `${FIREBASE_URL}/vendite_live/${oggi}.json`;
+
+            try {
+                let response = await fetch(url);
+                if (!response.ok) throw new Error("Errore di comunicazione con il server.");
+                
+                let data = await response.json();
+
+                let totaleIncasso = 0;
+                let totaleContanti = 0;
+                let totalePos = 0;
+                let numeroScontrini = 0;
+
+                // Se ci sono dati oggi, li calcoliamo
+                if (data) {
+                    let chiavi = Object.keys(data);
+                    numeroScontrini = chiavi.length;
+
+                    chiavi.forEach(id => {
+                        let scontrino = data[id];
+                        totaleIncasso += scontrino.totale || 0;
+                        totaleContanti += scontrino.contanti || 0;
+                        totalePos += scontrino.pos || 0;
+                    });
+                }
+
+                // Calcolo Media
+                let ticketMedio = numeroScontrini > 0 ? (totaleIncasso / numeroScontrini) : 0;
+
+                // Aggiorniamo l'interfaccia utente
+                document.getElementById('ui-totale').textContent = `€ ${totaleIncasso.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                document.getElementById('ui-contanti').textContent = `€ ${totaleContanti.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                document.getElementById('ui-pos').textContent = `€ ${totalePos.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                document.getElementById('ui-scontrini').textContent = numeroScontrini;
+                document.getElementById('ui-media').textContent = `€ ${ticketMedio.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+
+            } catch (error) {
+                console.error(error);
+                mostraAvviso("Impossibile scaricare i dati. Riprova più tardi.");
+            } finally {
+                bottone.innerHTML = '🔄 AGGIORNA DATI';
+            }
+        }
+
+        // Sostituto degli alert di sistema
+        function mostraAvviso(testo) {
+            document.getElementById('testo-avviso').textContent = testo;
+            document.getElementById('modal-avviso').style.display = 'flex';
+        }
+
+        // Avvio automatico all'apertura
+        window.onload = () => {
+            impostaDataOggi();
+            scaricaDatiLive();
+        };
+    </script>
+</body>
+</html>

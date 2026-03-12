@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cruscotto Direzionale</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-main: #c9d1d9;
+            --accent-green: #2ea043;
+            --accent-blue: #388bfd;
+            --accent-purple: #8957e5;
+            --accent-gold: #e3b341;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background-color: var(--card-bg);
+            padding: 15px 10px;
+            text-align: center;
+            border-bottom: 1px solid #30363d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 2.2vh;
+                color: #ffffff;
+                letter-spacing: 1px;
+            }
+
+        .data-oggi {
+            font-size: 1.6vh;
+            color: #8b949e;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .btn-nav {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #30363d;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 2vh;
+            cursor: pointer;
+        }
+
+            .btn-nav:active {
+                background: rgba(255,255,255,0.1);
+            }
+
+        .container {
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 30px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #30363d;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card-title {
+            font-size: 1.5vh;
+            text-transform: uppercase;
+            color: #8b949e;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .valore-totale {
+            font-size: 5vh;
+            font-weight: bold;
+            color: var(--accent-green);
+            text-align: center;
+            margin: 5px 0;
+            text-shadow: 0 0 15px rgba(46, 160, 67, 0.4);
+        }
+
+        .grid-dati {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .dato-box {
+            background-color: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dato-valore {
+            font-size: 2.5vh;
+            color: #ffffff;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 1.8vh;
+        }
+
+            .list-item:last-child {
+                border-bottom: none;
+            }
+
+        .btn-aggiorna {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.8vh;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(56, 139, 253, 0.4);
+            margin-top: 10px;
+        }
+
+            .btn-aggiorna:active {
+                background-color: #1f6feb;
+                transform: scale(0.98);
+            }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-blue);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            width: 80%;
+        }
+
+        .badge-live {
+            background: #cc0000;
+            color: white;
+            font-size: 1.2vh;
+            padding: 2px 6px;
+            border-radius: 10px;
+            animation: pulse 2s infinite;
+            display: none;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="btn-nav" onclick="cambiaGiorno(-1)">◀</button>
+        <div>
+            <h1>📊 CRUSCOTTO <span id="badge-live" class="badge-live">LIVE</span></h1>
+            <div class="data-oggi" id="label-data">Caricamento...</div>
+        </div>
+        <button class="btn-nav" onclick="cambiaGiorno(1)">▶</button>
+    </div>
+
+    <div class="container">
+
+        <div class="card" style="border-color: var(--accent-green);">
+            <div class="card-title" style="text-align: center;">Incasso Totale</div>
+            <div class="valore-totale" id="ui-totale">€ 0,00</div>
+            <div class="grid-dati" style="margin-top: 15px;">
+                <div class="dato-box"><div class="card-title" style="margin:0;">Contanti</div><div class="dato-valore" id="ui-contanti" style="color: var(--accent-purple);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">POS</div><div class="dato-valore" id="ui-pos" style="color: var(--accent-blue);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Scontrini</div><div class="dato-valore" id="ui-scontrini">0</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Media</div><div class="dato-valore" id="ui-media">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Entrate Extra</div><div class="dato-valore" id="ui-entrate" style="color: var(--accent-green);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Uscite Cassa</div><div class="dato-valore" id="ui-uscite" style="color: #ff4d4d;">€ 0,00</div></div>
+            </div>
+        </div>
+
+        <div class="card" style="border-color: var(--accent-purple);">
+            <div class="card-title">👤 Incassi per Operatore</div>
+            <div id="lista-operatori" style="color: #fff;"><i>Nessun dato</i></div>
+        </div>
+
+        <div class="card" style="border-color: var(--accent-gold);">
+            <div class="card-title">🏆 Top 5 Prodotti</div>
+            <div id="lista-prodotti" style="color: #fff;"><i>Nessun dato</i></div>
+        </div>
+
+        <button class="btn-aggiorna" id="btn-manuale" onclick="scaricaDatiLive()">🔄 AGGIORNA MANUALMENTE</button>
+    </div>
+
+    <div class="modal-overlay" id="modal-avviso">
+        <div class="modal-box">
+            <div id="testo-avviso" style="font-size: 2vh; margin-bottom: 20px;"></div>
+            <button class="btn-aggiorna" style="margin: 0; padding: 10px;" onclick="document.getElementById('modal-avviso').style.display='none'">CHIUDI</button>
+        </div>
+    </div>
+
+    <script>
+        const FIREBASE_URL = "https://fidelity-gestionale-default-rtdb.europe-west1.firebasedatabase.app";
+        let dataOsservata = new Date();
+        let timerAutoRefresh = null;
+
+        // Formatta data (es. "6 Marzo 2026")
+        function aggiornaEtichettaData() {
+            const opzioni = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('label-data').textContent = dataOsservata.toLocaleDateString('it-IT', opzioni).toUpperCase();
+
+            // Se guardiamo oggi, attiviamo il LIVE. Altrimenti lo spegniamo.
+            let oggi = new Date();
+            let isOggi = dataOsservata.toDateString() === oggi.toDateString();
+            document.getElementById('badge-live').style.display = isOggi ? 'inline-block' : 'none';
+        }
+
+        // Cambio Giorno con le frecce
+        function cambiaGiorno(delta) {
+            dataOsservata.setDate(dataOsservata.getDate() + delta);
+            aggiornaEtichettaData();
+            scaricaDatiLive();
+        }
+
+        // Restituisce YYYY-MM-DD per Firebase
+        function getGiornoString(d) {
+            let anno = d.getFullYear(); let mese = String(d.getMonth() + 1).padStart(2, '0'); let giorno = String(d.getDate()).padStart(2, '0');
+            return `${anno}-${mese}-${giorno}`;
+        }
+
+        async function scaricaDatiLive() {
+            if (!navigator.onLine) { mostraAvviso("Sei offline!"); return; }
+
+            const giornoStr = getGiornoString(dataOsservata);
+            const url = `${FIREBASE_URL}/vendite_live/${giornoStr}.json`;
+
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+
+                let totIncasso = 0; let totContanti = 0; let totPos = 0; let numScontrini = 0;
+                let totEntrateExtra = 0; let totUscite = 0;
+                let statOperatori = {}; let statProdotti = {};
+
+                if (data) {
+                    let chiavi = Object.keys(data);
+
+                    chiavi.forEach(id => {
+                        let record = data[id];
+                        let tipo = record.tipo ? record.tipo : "VENDITA";
+
+                        if (tipo === "VENDITA") {
+                            totIncasso += record.totale || 0;
+                            totContanti += record.contanti || 0;
+                            totPos += record.pos || 0;
+                            numScontrini++;
+
+                            // Calcolo Operatori (solo sulle vendite)
+                            let op = record.operatore || "Sconosciuto";
+                            statOperatori[op] = (statOperatori[op] || 0) + (record.totale || 0);
+
+                            // Calcolo Prodotti (solo sulle vendite)
+                            if (record.articoli) {
+                                record.articoli.forEach(art => {
+                                    let nome = art.DESCRIZIONE || "Ignoto";
+                                    let qta = art.QUANTITA || 1;
+                                    statProdotti[nome] = (statProdotti[nome] || 0) + qta;
+                                });
+                            }
+                        } else if (tipo === "ENTRATA") {
+                            totEntrateExtra += record.totale || 0;
+                        } else if (tipo === "USCITA") {
+                            totUscite += record.totale || 0;
+                        }
+                    });
+                }
+
+                // 1. Stampa Totali Base
+                document.getElementById('ui-totale').textContent = `€ ${totIncasso.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                document.getElementById('ui-contanti').textContent = `€ ${totContanti.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                document.getElementById('ui-pos').textContent = `€ ${totPos.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                document.getElementById('ui-scontrini').textContent = numScontrini;
+                document.getElementById('ui-media').textContent = `€ ${numScontrini > 0 ? (totIncasso / numScontrini).toLocaleString('it-IT', { minimumFractionDigits: 2 }) : "0,00"}`;
+
+                // Stampa Uscite ed Entrate
+                document.getElementById('ui-entrate').textContent = `+ € ${totEntrateExtra.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                document.getElementById('ui-uscite').textContent = `- € ${totUscite.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+
+                // 2. Stampa Classifica Operatori
+                let htmlOp = "";
+                let arrOp = Object.keys(statOperatori).map(k => ({ nome: k, incasso: statOperatori[k] }));
+                arrOp.sort((a, b) => b.incasso - a.incasso);
+                arrOp.forEach(o => { htmlOp += `<div class="list-item"><span>${o.nome}</span><span style="color:var(--accent-purple); font-weight:bold;">€ ${o.incasso.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span></div>`; });
+                document.getElementById('lista-operatori').innerHTML = htmlOp || "<i>Nessuna vendita registrata</i>";
+
+                // 3. Stampa Top 5 Prodotti
+                let htmlProd = "";
+                let arrProd = Object.keys(statProdotti).map(k => ({ nome: k, qta: statProdotti[k] }));
+                arrProd.sort((a, b) => b.qta - a.qta);
+                arrProd.slice(0, 5).forEach((p, index) => {
+                    htmlProd += `<div class="list-item"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%;">${index + 1}. ${p.nome}</span><span style="color:var(--accent-gold); font-weight:bold;">${p.qta} pz</span></div>`;
+                });
+                document.getElementById('lista-prodotti').innerHTML = htmlProd || "<i>Nessun prodotto venduto</i>";
+
+            } catch (error) { console.error(error); }
+        }
+
+        function mostraAvviso(testo) { document.getElementById('testo-avviso').textContent = testo; document.getElementById('modal-avviso').style.display = 'flex'; }
+
+        window.onload = () => {
+            aggiornaEtichettaData();
+            scaricaDatiLive();
+
+            // AUTO-REFRESH OGNI 30 SECONDI (Silenzioso)
+            timerAutoRefresh = setInterval(() => {
+                // Aggiorna da solo SOLO se stiamo visualizzando la data di OGGI
+                let oggi = new Date();
+                if (dataOsservata.toDateString() === oggi.toDateString()) {
+                    scaricaDatiLive();
+                }
+            }, 30000);
+        };
+    </script>
+</body>
+</html>

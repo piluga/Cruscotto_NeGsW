@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cruscotto-v2';
+const CACHE_NAME = 'cruscotto-v3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',

@@ -12,9 +12,32 @@ function aggiornaEtichettaData() {
 }
 
 function cambiaGiorno(delta) {
-    dataOsservata.setDate(dataOsservata.getDate() + delta);
-    aggiornaEtichettaData();
-    scaricaDatiLive();
+    const container = document.getElementById('main-container');
+
+    // 1. Fai scivolare via i dati attuali nella direzione corretta
+    container.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+    container.classList.add(delta > 0 ? 'swipe-out-left' : 'swipe-out-right');
+
+    // Aspetta che l'animazione di uscita finisca (200 millisecondi) prima di caricare i nuovi
+    setTimeout(() => {
+        // 2. Cambia la data e scarica i nuovi dati dal Cloud
+        dataOsservata.setDate(dataOsservata.getDate() + delta);
+        aggiornaEtichettaData();
+        scaricaDatiLive();
+
+        // 3. Sposta istantaneamente (senza animazione) il container sul lato opposto, pronto per entrare
+        container.style.transition = 'none';
+        container.classList.remove('swipe-out-left', 'swipe-out-right');
+        container.classList.add(delta > 0 ? 'swipe-in-right' : 'swipe-in-left');
+
+        // Forza il browser a registrare la nuova posizione invisibile (Reflow)
+        void container.offsetWidth;
+
+        // 4. Riattiva l'animazione e fallo scivolare dolcemente al centro dello schermo!
+        container.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+        container.classList.remove('swipe-in-left', 'swipe-in-right');
+
+    }, 200);
 }
 
 function getGiornoString(d) {

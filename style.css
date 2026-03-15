@@ -220,3 +220,28 @@ html, body {
      
     } 
 }
+
+/* 🚀 ANIMAZIONI DI TRANSIZIONE (SWIPE) */
+.animate-swipe {
+    transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.swipe-out-left {
+    transform: translateX(-50px);
+    opacity: 0;
+}
+
+.swipe-out-right {
+    transform: translateX(50px);
+    opacity: 0;
+}
+
+.swipe-in-left {
+    transform: translateX(-50px);
+    opacity: 0;
+}
+
+.swipe-in-right {
+    transform: translateX(50px);
+    opacity: 0;
+}

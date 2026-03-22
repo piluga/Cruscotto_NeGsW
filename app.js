@@ -64,12 +64,11 @@ async function scaricaDatiLive() {
             if (d && !d.error) Object.assign(data, d);
         }
 
-        // 2. Cerca nello Storico Vendite (struttura piatta, usiamo la query Firebase orderBy)
+        // 2. Cerca nello Storico Vendite
         let resStoricoV = await fetch(`${FIREBASE_URL}/storico_vendite.json?orderBy="GIORNO"&equalTo="${giornoStr}"`);
         if (resStoricoV.ok) {
             let d = await resStoricoV.json();
             if (d && !d.error) {
-                // Mappiamo i campi MAIUSCOLI dello storico in minuscoli per il Cruscotto
                 Object.keys(d).forEach(k => {
                     d[k].tipo = "VENDITA";
                     d[k].totale = (d[k].CONTANTI || 0) + (d[k].POS || 0);
@@ -83,7 +82,7 @@ async function scaricaDatiLive() {
             }
         }
 
-        // 3. Cerca nello Storico Movimenti (struttura piatta, usiamo la query Firebase orderBy)
+        // 3. Cerca nello Storico Movimenti
         let resStoricoM = await fetch(`${FIREBASE_URL}/storico_movimenti.json?orderBy="data"&equalTo="${giornoStr}"`);
         if (resStoricoM.ok) {
             let d = await resStoricoM.json();
@@ -104,11 +103,18 @@ async function scaricaDatiLive() {
         chiavi.forEach(id => {
             let record = data[id];
             let tipo = record.tipo ? record.tipo : "VENDITA";
-            let op = record.operatore || "Sconosciuto";
+
+            // Se non c'è operatore (tipico di uscite/entrate extra), assegna a "CASSA / EXTRA"
+            let op = record.operatore || "CASSA / EXTRA";
 
             // Prepara il cassetto per questo operatore
             if (!window.datiOperatoriGlobale[op]) {
                 window.datiOperatoriGlobale[op] = [];
+            }
+
+            // Garantisce che l'operatore appaia nella lista anche se ha fatto 0 vendite
+            if (statOperatori[op] === undefined) {
+                statOperatori[op] = 0;
             }
 
             if (tipo === "VENDITA") {
@@ -117,19 +123,24 @@ async function scaricaDatiLive() {
                 totPos += record.pos || 0;
                 numScontrini++;
 
-                statOperatori[op] = (statOperatori[op] || 0) + (record.totale || 0);
+                statOperatori[op] += (record.totale || 0);
+
+                // --- CALCOLO METODO DI PAGAMENTO ---
+                let metodoTesto = "";
+                if (record.contanti > 0 && record.pos === 0) metodoTesto = " 💵 (Contanti)";
+                else if (record.pos > 0 && record.contanti === 0) metodoTesto = " 💳 (POS)";
+                else if (record.pos > 0 && record.contanti > 0) metodoTesto = " 💵💳 (Misto)";
 
                 // Salva la vendita nel dettaglio operatore
                 window.datiOperatoriGlobale[op].push({
                     ora: record.ora || "-",
                     tipo: "VENDITA",
                     importo: record.totale || 0,
-                    desc: "Scontrino Emesso"
+                    desc: "Scontrino Emesso" + metodoTesto
                 });
 
                 if (record.articoli) {
                     record.articoli.forEach(art => {
-                        // Legge sia il formato dello storico (DESCRIZIONE) che quello Live (descrizione)
                         let nome = art.DESCRIZIONE || art.descrizione || "Ignoto";
                         let qta = art.QUANTITA || art.qta || 1;
                         statProdotti[nome] = (statProdotti[nome] || 0) + qta;
@@ -169,6 +180,7 @@ async function scaricaDatiLive() {
 
     let htmlOp = "";
     let arrOp = Object.keys(statOperatori).map(k => ({ nome: k, incasso: statOperatori[k] }));
+    // Ordina prima per incasso e poi per nome
     arrOp.sort((a, b) => b.incasso - a.incasso);
 
     arrOp.forEach(o => {

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cruscotto Direzionale</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1117">
+    <link rel="apple-touch-icon" href="icone/dashboard192.png">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="header">
+        <button class="btn-nav" onclick="cambiaGiorno(-1)">◀</button>
+        <div>
+            <h1>📊 CRUSCOTTO <span id="badge-live" class="badge-live">LIVE</span></h1>
+            <div class="data-oggi" id="label-data">Caricamento...</div>
+        </div>
+        <button class="btn-nav" onclick="cambiaGiorno(1)">▶</button>
+    </div>
+
+    <div class="container animate-swipe" id="main-container">
+        <div class="card" style="border-color: var(--accent-green);">
+            <div class="card-title" style="text-align: center;">Incasso Totale</div>
+            <div class="valore-totale" id="ui-totale">€ 0,00</div>
+            <div class="grid-dati" style="margin-top: 15px;">
+                <div class="dato-box"><div class="card-title" style="margin:0;">Contanti</div><div class="dato-valore" id="ui-contanti" style="color: var(--accent-purple);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">POS</div><div class="dato-valore" id="ui-pos" style="color: var(--accent-blue);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Scontrini</div><div class="dato-valore" id="ui-scontrini">0</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Media</div><div class="dato-valore" id="ui-media">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Entrate Extra</div><div class="dato-valore" id="ui-entrate" style="color: var(--accent-green);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Uscite Cassa</div><div class="dato-valore" id="ui-uscite" style="color: #ff4d4d;">€ 0,00</div></div>
+            </div>
+        </div>
+
+        <div class="card" style="border-color: var(--accent-purple);">
+            <div class="card-title">👤 Incassi per Operatore</div>
+            <div id="lista-operatori" style="color: #fff;"><i>Nessun dato</i></div>
+        </div>
+
+        <div class="card" style="border-color: var(--accent-gold);">
+            <div class="card-title">🏆 Top 5 Prodotti</div>
+            <div id="lista-prodotti" style="color: #fff;"><i>Nessun dato</i></div>
+        </div>
+
+        <button class="btn-aggiorna" id="btn-manuale" onclick="scaricaDatiLive()">🔄 AGGIORNA MANUALMENTE</button>
+    </div>
+
+    <div class="modal-overlay" id="modal-avviso">
+        <div class="modal-box">
+            <div id="testo-avviso" style="font-size: 2vh; margin-bottom: 20px;"></div>
+            <button class="btn-aggiorna" style="margin: 0; padding: 10px;" onclick="document.getElementById('modal-avviso').style.display='none'">CHIUDI</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-dettaglio-operatore">
+        <div class="modal-box" style="width: 500px; max-height: 80vh; display: flex; flex-direction: column; padding: 20px;">
+            <div class="modal-titolo" id="titolo-modale-operatore" style="color: var(--accent-purple);">DETTAGLIO OPERATORE</div>
+
+            <div class="testata-tabella" style="display: grid; grid-template-columns: 1fr 2.5fr 1fr; font-size: 1.6vh; background: #002b5e; color: white; padding: 8px 5px; margin-top: 10px; border-radius: 4px;">
+                <div style="text-align: center;">ORA</div><div style="text-align: left;">OPERAZIONE</div><div style="text-align: right;">IMPORTO</div>
+            </div>
+
+            <div id="lista-dettaglio-operatore" style="overflow-y: auto; flex-grow: 1; font-size: 1.8vh; border: 1px solid rgba(255,255,255,0.2); border-top: none; padding: 5px;"></div>
+
+            <div class="modal-bottoniera" style="margin-top: 20px;">
+                <button class="btn-modal btn-grigio" style="width: 100%;" onclick="document.getElementById('modal-dettaglio-operatore').style.display='none'">CHIUDI DETTAGLIO</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('Service worker registrato.', reg))
+                    .catch((err) => console.log('Errore Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>

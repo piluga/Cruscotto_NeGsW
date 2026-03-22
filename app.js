@@ -57,26 +57,34 @@ async function scaricaDatiLive() {
     let data = {}; // Contenitore unico in cui uniremo Live e Storici
 
     try {
-        // 1. Cerca nel Live (giorno in corso)
+        // 1. Cerca nel Live (struttura a cartelle per giorno)
         let resLive = await fetch(`${FIREBASE_URL}/vendite_live/${giornoStr}.json`);
         if (resLive.ok) {
             let d = await resLive.json();
             if (d && !d.error) Object.assign(data, d);
         }
 
-        // 2. Cerca nello Storico Vendite (giorni passati)
-        let resStoricoV = await fetch(`${FIREBASE_URL}/storico_vendite/${giornoStr}.json`);
+        // 2. Cerca nello Storico Vendite (struttura piatta, usiamo la query Firebase orderBy)
+        let resStoricoV = await fetch(`${FIREBASE_URL}/storico_vendite.json?orderBy="GIORNO"&equalTo="${giornoStr}"`);
         if (resStoricoV.ok) {
             let d = await resStoricoV.json();
             if (d && !d.error) {
-                // Assicuriamo che i vecchi record abbiano l'etichetta VENDITA
-                Object.keys(d).forEach(k => { if (!d[k].tipo) d[k].tipo = "VENDITA"; });
+                // Mappiamo i campi MAIUSCOLI dello storico in minuscoli per il Cruscotto
+                Object.keys(d).forEach(k => {
+                    d[k].tipo = "VENDITA";
+                    d[k].totale = (d[k].CONTANTI || 0) + (d[k].POS || 0);
+                    d[k].contanti = d[k].CONTANTI || 0;
+                    d[k].pos = d[k].POS || 0;
+                    d[k].operatore = d[k].OPERATORE || "Sconosciuto";
+                    d[k].ora = d[k].ORA || "-";
+                    d[k].articoli = d[k].ARTICOLI || [];
+                });
                 Object.assign(data, d);
             }
         }
 
-        // 3. Cerca nello Storico Movimenti (Entrate/Uscite giorni passati)
-        let resStoricoM = await fetch(`${FIREBASE_URL}/storico_movimenti/${giornoStr}.json`);
+        // 3. Cerca nello Storico Movimenti (struttura piatta, usiamo la query Firebase orderBy)
+        let resStoricoM = await fetch(`${FIREBASE_URL}/storico_movimenti.json?orderBy="data"&equalTo="${giornoStr}"`);
         if (resStoricoM.ok) {
             let d = await resStoricoM.json();
             if (d && !d.error) Object.assign(data, d);
@@ -113,7 +121,7 @@ async function scaricaDatiLive() {
 
                 // Salva la vendita nel dettaglio operatore
                 window.datiOperatoriGlobale[op].push({
-                    ora: record.ora || record.ORA || "-",
+                    ora: record.ora || "-",
                     tipo: "VENDITA",
                     importo: record.totale || 0,
                     desc: "Scontrino Emesso"
@@ -121,17 +129,17 @@ async function scaricaDatiLive() {
 
                 if (record.articoli) {
                     record.articoli.forEach(art => {
-                        let nome = art.DESCRIZIONE || "Ignoto";
-                        let qta = art.QUANTITA || 1;
+                        // Legge sia il formato dello storico (DESCRIZIONE) che quello Live (descrizione)
+                        let nome = art.DESCRIZIONE || art.descrizione || "Ignoto";
+                        let qta = art.QUANTITA || art.qta || 1;
                         statProdotti[nome] = (statProdotti[nome] || 0) + qta;
                     });
                 }
             } else if (tipo === "ENTRATA") {
-                // Compatibilità retroattiva tra '.totale' e '.importo'
                 let valoreEntrata = record.totale || record.importo || 0;
                 totEntrateExtra += valoreEntrata;
                 window.datiOperatoriGlobale[op].push({
-                    ora: record.ora || record.ORA || "-",
+                    ora: record.ora || "-",
                     tipo: "ENTRATA",
                     importo: valoreEntrata,
                     desc: record.descrizione || record.causale || "Entrata Extra"
@@ -140,7 +148,7 @@ async function scaricaDatiLive() {
                 let valoreUscita = record.totale || record.importo || 0;
                 totUscite += valoreUscita;
                 window.datiOperatoriGlobale[op].push({
-                    ora: record.ora || record.ORA || "-",
+                    ora: record.ora || "-",
                     tipo: "USCITA",
                     importo: valoreUscita,
                     desc: record.descrizione || record.causale || "Spesa/Uscita"

@@ -54,23 +54,21 @@ async function scaricaDatiLive() {
     if (!navigator.onLine) { mostraAvviso("Sei offline!"); return; }
 
     const giornoStr = getGiornoString(dataOsservata);
-    let data = {}; // Contenitore unico in cui uniremo Live e Storici
+    let data = {}; 
 
     try {
-        // 1. Cerca nel Live (struttura a cartelle per giorno)
         let resLive = await fetch(`${FIREBASE_URL}/vendite_live/${giornoStr}.json`);
         if (resLive.ok) {
             let d = await resLive.json();
             if (d && !d.error) Object.assign(data, d);
         }
 
-        // 2. Cerca nello Storico Vendite
         let resStoricoV = await fetch(`${FIREBASE_URL}/storico_vendite.json?orderBy="GIORNO"&equalTo="${giornoStr}"`);
         if (resStoricoV.ok) {
             let d = await resStoricoV.json();
             if (d && !d.error) {
-                Object.keys(d).forEach(k => {
-                    d[k].tipo = "VENDITA";
+                Object.keys(d).forEach(k => { 
+                    d[k].tipo = "VENDITA"; 
                     d[k].totale = (d[k].CONTANTI || 0) + (d[k].POS || 0);
                     d[k].contanti = d[k].CONTANTI || 0;
                     d[k].pos = d[k].POS || 0;
@@ -82,7 +80,6 @@ async function scaricaDatiLive() {
             }
         }
 
-        // 3. Cerca nello Storico Movimenti
         let resStoricoM = await fetch(`${FIREBASE_URL}/storico_movimenti.json?orderBy="data"&equalTo="${giornoStr}"`);
         if (resStoricoM.ok) {
             let d = await resStoricoM.json();
@@ -94,25 +91,31 @@ async function scaricaDatiLive() {
     let totVendite = 0; let totContanti = 0; let totPos = 0; let numScontrini = 0;
     let totEntrateExtra = 0; let totUscite = 0;
     let statOperatori = {}; let statProdotti = {};
-
-    // Resetta la memoria degli operatori per il giorno selezionato
+    
     window.datiOperatoriGlobale = {};
+
+    // 🚀 FIX: MOTORE DI DEDUPLICAZIONE ANTI-CLONI
+    let recordProcessati = new Set();
 
     let chiavi = Object.keys(data);
     if (chiavi.length > 0) {
         chiavi.forEach(id => {
             let record = data[id];
             let tipo = record.tipo ? record.tipo : "VENDITA";
+            
+            // Crea una chiave unica estraendo solo i numeri per riconoscere il record clonato
+            let numericId = String(record.id || id).replace(/\D/g, '');
+            let uniqueKey = tipo + "_" + numericId;
+            
+            if (recordProcessati.has(uniqueKey)) return; // Se lo abbiamo già contato, lo saltiamo!
+            recordProcessati.add(uniqueKey);
 
-            // Se non c'è operatore (tipico di uscite/entrate extra), assegna a "CASSA / EXTRA"
             let op = record.operatore || "CASSA / EXTRA";
 
-            // Prepara il cassetto per questo operatore
             if (!window.datiOperatoriGlobale[op]) {
                 window.datiOperatoriGlobale[op] = [];
             }
-
-            // Garantisce che l'operatore appaia nella lista anche se ha fatto 0 vendite
+            
             if (statOperatori[op] === undefined) {
                 statOperatori[op] = 0;
             }
@@ -124,14 +127,12 @@ async function scaricaDatiLive() {
                 numScontrini++;
 
                 statOperatori[op] += (record.totale || 0);
-
-                // --- CALCOLO METODO DI PAGAMENTO ---
+                
                 let metodoTesto = "";
                 if (record.contanti > 0 && record.pos === 0) metodoTesto = " 💵 (Contanti)";
                 else if (record.pos > 0 && record.contanti === 0) metodoTesto = " 💳 (POS)";
                 else if (record.pos > 0 && record.contanti > 0) metodoTesto = " 💵💳 (Misto)";
 
-                // Salva la vendita nel dettaglio operatore
                 window.datiOperatoriGlobale[op].push({
                     ora: record.ora || "-",
                     tipo: "VENDITA",
@@ -149,6 +150,9 @@ async function scaricaDatiLive() {
             } else if (tipo === "ENTRATA") {
                 let valoreEntrata = record.totale || record.importo || 0;
                 totEntrateExtra += valoreEntrata;
+                
+                statOperatori[op] += valoreEntrata;
+                
                 window.datiOperatoriGlobale[op].push({
                     ora: record.ora || "-",
                     tipo: "ENTRATA",
@@ -158,6 +162,9 @@ async function scaricaDatiLive() {
             } else if (tipo === "USCITA") {
                 let valoreUscita = record.totale || record.importo || 0;
                 totUscite += valoreUscita;
+                
+                statOperatori[op] -= valoreUscita;
+                
                 window.datiOperatoriGlobale[op].push({
                     ora: record.ora || "-",
                     tipo: "USCITA",
@@ -174,32 +181,33 @@ async function scaricaDatiLive() {
     document.getElementById('ui-contanti').textContent = `€ ${totContanti.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
     document.getElementById('ui-pos').textContent = `€ ${totPos.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
     document.getElementById('ui-scontrini').textContent = numScontrini;
-    document.getElementById('ui-media').textContent = `€ ${numScontrini > 0 ? (totVendite / numScontrini).toLocaleString('it-IT', { minimumFractionDigits: 2 }) : "0,00"}`;
+    document.getElementById('ui-media').textContent = `€ ${numScontrini > 0 ? (totVendite/numScontrini).toLocaleString('it-IT', { minimumFractionDigits: 2 }) : "0,00"}`;
     document.getElementById('ui-entrate').textContent = `+ € ${totEntrateExtra.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
     document.getElementById('ui-uscite').textContent = `- € ${totUscite.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
 
     let htmlOp = "";
-    let arrOp = Object.keys(statOperatori).map(k => ({ nome: k, incasso: statOperatori[k] }));
-    // Ordina prima per incasso e poi per nome
-    arrOp.sort((a, b) => b.incasso - a.incasso);
-
-    arrOp.forEach(o => {
+    let arrOp = Object.keys(statOperatori).map(k => ({nome: k, incasso: statOperatori[k]}));
+    arrOp.sort((a,b) => b.incasso - a.incasso);
+    
+    arrOp.forEach(o => { 
+        if (o.nome === "CASSA / EXTRA" || o.nome === "Sconosciuto") return;
+        
         htmlOp += `
         <div class="list-item" style="align-items: center;">
             <span>${o.nome}</span>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="color:var(--accent-purple); font-weight:bold;">€ ${o.incasso.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
+                <span style="color:var(--accent-purple); font-weight:bold;">€ ${o.incasso.toLocaleString('it-IT',{minimumFractionDigits:2})}</span>
                 <button onclick="apriDettaglioOperatore('${o.nome}')" style="background: rgba(137, 87, 229, 0.2); border: 1px solid var(--accent-purple); color: #fff; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 1.4vh;" title="Vedi Movimenti">👁️</button>
             </div>
-        </div>`;
+        </div>`; 
     });
     document.getElementById('lista-operatori').innerHTML = htmlOp || "<i>Nessuna vendita registrata</i>";
 
     let htmlProd = "";
-    let arrProd = Object.keys(statProdotti).map(k => ({ nome: k, qta: statProdotti[k] }));
-    arrProd.sort((a, b) => b.qta - a.qta);
-    arrProd.slice(0, 5).forEach((p, index) => {
-        htmlProd += `<div class="list-item"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%;">${index + 1}. ${p.nome}</span><span style="color:var(--accent-gold); font-weight:bold;">${p.qta} pz</span></div>`;
+    let arrProd = Object.keys(statProdotti).map(k => ({nome: k, qta: statProdotti[k]}));
+    arrProd.sort((a,b) => b.qta - a.qta);
+    arrProd.slice(0, 5).forEach((p, index) => { 
+        htmlProd += `<div class="list-item"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%;">${index+1}. ${p.nome}</span><span style="color:var(--accent-gold); font-weight:bold;">${p.qta} pz</span></div>`; 
     });
     document.getElementById('lista-prodotti').innerHTML = htmlProd || "<i>Nessun prodotto venduto</i>";
 }

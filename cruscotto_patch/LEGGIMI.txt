@@ -1,0 +1,27 @@
+PATCH CONSERVATIVA - CRUSCOTTO 1.0.0
+
+Contenuto:
+- dati.js: versione corretta dei calcoli e Top 5
+- tests/dati.test.mjs e dati.mjs: test eseguibili in isolamento con Node 22+
+
+Modifiche:
+- Somma monetaria in centesimi, conversione finale in euro.
+- Distinzione per operatore tra vendite, entrate, uscite; .totale resta compatibile.
+- Top 5 raggruppato per codice prodotto; non vengono contati bonus/voucher/reso/PUNTI.
+- Nuovi indicatori disponibili, ma NON visualizzati: bonusUtilizzati, voucherUtilizzati,
+  liveSenzaArticoli; prodottiPerCodice.
+- Conservate le strutture .prodotti, .operatori, .totale, .media, .scontrini.
+
+Installazione prudente:
+1) Eseguire backup della cartella originale.
+2) Sostituire SOLO dati.js e aggiornare la query di import in app.js
+   (da './dati.js?v=sicurezza-1' a './dati.js?v=conteggi-2').
+3) In sw.js cambiare CACHE_NAME a cruscotto-conteggi-v4 e nella lista ASSETS
+   cambiare './dati.js?v=sicurezza-1' in './dati.js?v=conteggi-2'.
+4) Ricaricare la PWA da una sessione nuova e verificare i risultati contro il registro.
+5) Eseguire i test originali del progetto con npm test in copia locale.
+
+ATTENZIONE: questo pacchetto NON corregge resi.js: la modifica degli scontrini
+originali e' un intervento funzionale ad alto impatto e necessita test end-to-end.
+I test inclusi sono test mirati, non un collaudo completo con dati Firebase reali.
+Nessun file del Dropbox originale e' stato modificato.

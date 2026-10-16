@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://fidelity-gestionale-default-rtdb.europe-west1.firebasedatabase.app; object-src 'none'; base-uri 'none'; form-action 'self'">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cruscotto Direzionale</title>
+    
+    <meta name="theme-color" content="#0d1117">
+    <link rel="apple-touch-icon" href="icone/dashboard192.png">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="header">
+        <button class="btn-nav" id="giorno-prima" disabled>◀</button>
+        <div>
+            <h1>📊 CRUSCOTTO <span id="badge-live" class="badge-live">LIVE</span></h1>
+            <div class="data-oggi" id="label-data">Caricamento...</div>
+        </div>
+        <button class="btn-nav" id="giorno-dopo" disabled>▶</button>
+    </div>
+
+    <section class="card accesso" id="login-panel">
+        <h2>Accedi al cruscotto</h2>
+        <form id="login-form">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" autocomplete="username" required>
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" autocomplete="current-password" required>
+            <button class="btn-aggiorna" id="btn-accedi" type="submit" disabled>ACCEDI</button>
+        </form>
+        <p id="login-stato" role="status" aria-live="polite"></p>
+    </section>
+    <div id="sessione" class="sessione" hidden><span id="utente"></span><button id="btn-esci" class="btn-nav">ESCI</button></div>
+    <p id="stato-dati" role="status" aria-live="polite"></p>
+    <p id="stato-pwa" role="status"></p>
+    <div class="container animate-swipe" id="main-container" hidden>
+        <div class="card" style="border-color: var(--accent-green);">
+            <div class="card-title" style="text-align: center;">Incasso Totale</div>
+            <div class="valore-totale" id="ui-totale">€ 0,00</div>
+            <div class="grid-dati" style="margin-top: 15px;">
+                <div class="dato-box"><div class="card-title" style="margin:0;">Contanti</div><div class="dato-valore" id="ui-contanti" style="color: var(--accent-purple);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">POS</div><div class="dato-valore" id="ui-pos" style="color: var(--accent-blue);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Scontrini</div><div class="dato-valore" id="ui-scontrini">0</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Media</div><div class="dato-valore" id="ui-media">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Entrate Extra</div><div class="dato-valore" id="ui-entrate" style="color: var(--accent-green);">€ 0,00</div></div>
+                <div class="dato-box"><div class="card-title" style="margin:0;">Uscite Cassa</div><div class="dato-valore" id="ui-uscite" style="color: #ff4d4d;">€ 0,00</div></div>
+            </div>
+        </div>
+
+        <div class="card" style="border-color: var(--accent-purple);">
+            <div class="card-title">👤 Incassi per Operatore</div>
+            <div id="lista-operatori" style="color: #fff;"><i>Nessun dato</i></div>
+        </div>
+
+        <div class="card" style="border-color: var(--accent-gold);">
+            <div class="card-title">🏆 Top 5 Prodotti</div>
+            <div id="lista-prodotti" style="color: #fff;"><i>Nessun dato</i></div>
+        </div>
+
+        <button class="btn-aggiorna" id="btn-manuale">🔄 AGGIORNA MANUALMENTE</button>
+    </div>
+
+    <div class="modal-overlay" id="modal-dettaglio-operatore">
+        <div class="modal-box" style="width: 500px; max-height: 80vh; display: flex; flex-direction: column; padding: 20px;">
+            <div class="modal-titolo" id="titolo-modale-operatore" style="color: var(--accent-purple);">DETTAGLIO OPERATORE</div>
+
+            <div class="testata-tabella" style="display: grid; grid-template-columns: 1fr 2.5fr 1fr; font-size: 1.6vh; background: #002b5e; color: white; padding: 8px 5px; margin-top: 10px; border-radius: 4px;">
+                <div style="text-align: center;">ORA</div><div style="text-align: left;">OPERAZIONE</div><div style="text-align: right;">IMPORTO</div>
+            </div>
+
+            <div id="lista-dettaglio-operatore" style="overflow-y: auto; flex-grow: 1; font-size: 1.8vh; border: 1px solid rgba(255,255,255,0.2); border-top: none; padding: 5px;"></div>
+
+            <div class="modal-bottoniera" style="margin-top: 20px;">
+                <button class="btn-modal btn-grigio" style="width: 100%;" id="chiudi-dettaglio">CHIUDI DETTAGLIO</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="avvio.js?v=locale-1" defer></script>
+</body>
+</html>

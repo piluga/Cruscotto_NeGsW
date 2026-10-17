@@ -460,3 +460,24 @@ body > div[style*="z-index:99999"] > section{border-color:#c5a044!important;box-
 @media(prefers-reduced-motion:reduce){.btn-nav{transition:none!important}}
 /* FINE CRUSCOTTO_HYBRID_LUXURY_V1 */
 
+/* CRUSCOTTO_DETTAGLI_COMPATTI_V1 - SOLO GRAFICA DEL PULSANTE DETTAGLI */
+#lista-operatori .list-item > button.btn-nav {
+    font-size: 13px !important;
+    font-weight: 600;
+    line-height: 1.15 !important;
+    padding: 7px 11px !important;
+    min-height: 38px;
+    min-width: 65px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    border-radius: 7px !important;
+}
+@media (max-width: 650px) {
+    #lista-operatori .list-item > button.btn-nav {
+        font-size: 12px !important;
+        padding: 6px 9px !important;
+        min-width: 62px;
+        min-height: 38px;
+    }
+}
+/* FINE CRUSCOTTO_DETTAGLI_COMPATTI_V1 */

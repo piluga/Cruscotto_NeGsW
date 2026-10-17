@@ -1,4 +1,4 @@
-﻿// Script classico: puo mostrare istruzioni anche quando i moduli file:// sono bloccati.
+// Script classico: puo mostrare istruzioni anche quando i moduli file:// sono bloccati.
 (() => {
     const stato = document.getElementById('login-stato');
     if (location.protocol === 'file:') {
@@ -8,7 +8,7 @@
     }
     const manifest = document.createElement('link');
     manifest.rel = 'manifest'; manifest.href = './manifest.json'; document.head.append(manifest);
-    import('./app.js?v=ripristino-login-v2-20261016').catch(() => {
+    import('./app.js?v=bottom-nav-v1-20261017').catch(() => {
         stato.textContent = 'Impossibile caricare il cruscotto. Verifica che tutti i file siano presenti e riapri tramite Avvia Cruscotto.bat oppure dal sito aggiornato.';
     });
 })();

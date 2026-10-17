@@ -243,3 +243,74 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { 
     uscita.append(esci);
     header.append(info, uscita);
 })();
+
+// CRUSCOTTO_BOTTOM_NAV_V1 - solo interfaccia; non altera le funzioni del cruscotto.
+(() => {
+  const main = document.getElementById('main-container');
+  if (!main || document.getElementById('cruscotto-bottom-nav')) return;
+  const nav = document.createElement('nav');
+  nav.id = 'cruscotto-bottom-nav';
+  nav.setAttribute('aria-label', 'Navigazione Cruscotto');
+  const actions = [
+    ['home','⌂','Home'], ['analisi','▥','Analisi'], ['aggiorna','⟳','Aggiorna'],
+    ['info','ⓘ','Info'], ['setup','⚙','Setup']
+  ];
+  let panel = null;
+  const close = () => { if(panel) {panel.remove();panel=null;} };
+  function openPanel(title, populate) {
+    close();
+    panel = document.createElement('div'); panel.className = 'cruscotto-bottom-overlay';
+    const sheet = document.createElement('section'); sheet.className = 'cruscotto-bottom-sheet';
+    sheet.setAttribute('role','dialog'); sheet.setAttribute('aria-modal','true');
+    sheet.setAttribute('aria-label', title);
+    const head = document.createElement('div'); head.className = 'cruscotto-bottom-sheet-head';
+    const h = document.createElement('h2'); h.textContent = title;
+    const x = document.createElement('button'); x.type='button'; x.className='btn-nav'; x.textContent='CHIUDI'; x.addEventListener('click', close);
+    head.append(h,x); const content = document.createElement('div');content.className='cruscotto-bottom-sheet-body';
+    sheet.append(head,content); panel.append(sheet);
+    panel.addEventListener('click',event=>{if(event.target===panel)close();});
+    document.body.append(panel); populate(content); x.focus();
+  }
+  function line(parent, label, value) {
+    const row=document.createElement('div');row.className='cruscotto-bottom-info-row';
+    const key=document.createElement('span');key.textContent=label;
+    const val=document.createElement('strong');val.textContent=value;
+    row.append(key,val);parent.append(row);
+  }
+  function act(parent, label, click, extraClass='') {
+    const btn=document.createElement('button');btn.type='button';btn.className='btn-nav cruscotto-bottom-sheet-btn '+extraClass;
+    btn.textContent=label;btn.addEventListener('click',click);parent.append(btn);return btn;
+  }
+  function run(kind) {
+    if (main.hidden) return;
+    if(kind==='home') {close(); main.scrollTo({top:0,behavior:'smooth'}); return;}
+    if(kind==='analisi') {
+      close();
+      const button=[...main.querySelectorAll('button')].find(b=>b.textContent.trim().includes('Analisi Avanzata'));
+      if(button) button.click(); else openPanel('Analisi Avanzata',c=>{c.textContent='Pulsante Analisi Avanzata non disponibile.';});
+      return;
+    }
+    if(kind==='aggiorna') {close(); document.getElementById('btn-manuale')?.click(); return;}
+    if(kind==='info') {openPanel('Informazioni',c=>{
+      line(c,'Account',document.getElementById('utente')?.textContent.trim()||'—');
+      line(c,'Ultimo aggiornamento',document.getElementById('stato-dati')?.textContent.trim()||'—');
+      line(c,'Connessione',navigator.onLine?'Online':'Offline');
+      line(c,'Installazione',document.getElementById('stato-pwa')?.textContent.trim()||'Nessuna informazione disponibile');
+    });return;}
+    if(kind==='setup') {openPanel('Setup',c=>{
+      const install=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Installa Cruscotto');
+      if(install && !install.hidden) act(c,'Installa Cruscotto',()=>{close();install.click();});
+      else {const note=document.createElement('p');note.textContent='Installazione PWA: usa il menu del browser se disponibile.';c.append(note);}
+      act(c,'ESCI DALL’ACCOUNT',()=>{close();document.getElementById('btn-esci')?.click();},'cruscotto-bottom-logout');
+    });}
+  }
+  for(const [key,icon,label] of actions) {
+    const b=document.createElement('button');b.type='button';b.className='cruscotto-bottom-tab';
+    b.setAttribute('aria-label',label);b.innerHTML='<span aria-hidden="true" class="cruscotto-bottom-symbol"></span><span class="cruscotto-bottom-name"></span>';
+    b.querySelector('.cruscotto-bottom-symbol').textContent=icon;
+    b.querySelector('.cruscotto-bottom-name').textContent=label;
+    b.addEventListener('click',()=>run(key));nav.append(b);
+  }
+  document.body.append(nav);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape' && panel)close();});
+})();

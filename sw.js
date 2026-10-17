@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cruscotto-header-inline-v2-20261017';
+const CACHE_NAME = 'cruscotto-header-mobile-v3-20261017';
 const ASSETS = ['./index.html', './avvio.js?v=locale-1', './style.css', './app.js?v=ripristino-login-v2-20261016', './firebase-client.js?v=cruscotto-fix-2',
     './firebase-config.js?v=sicurezza-1', './dati.js?v=statistiche-resi-v2-20261016', './manifest.json', './icone/dashboard192.png', './icone/dashboard512.png'];
 const urls = new Set(ASSETS.map(path => new URL(path, self.location.href).href));

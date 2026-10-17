@@ -318,3 +318,62 @@ body:has(#sessione[hidden]) #cruscotto-header-esci { display:none !important; }
   #cruscotto-header-esci #btn-esci { padding:6px 8px; font-size:11px; }
   .header h1 { font-size:clamp(11px,2vw,16px); }
 }
+
+/* CRUSCOTTO_HEADER_MOBILE_V3: SOLO CSS, desktop invariato */
+@media (max-width:650px) {
+  .header {
+    display:grid !important;
+    grid-template-columns:46px minmax(0,1fr) 46px;
+    grid-template-rows:auto auto;
+    column-gap:7px;
+    row-gap:8px;
+    align-items:center;
+    min-height:0;
+    padding:9px 10px 10px !important;
+    box-sizing:border-box;
+  }
+  .header > :nth-child(1) { grid-column:1; grid-row:1; justify-self:start; }
+  .header > :nth-child(2) { grid-column:2; grid-row:1; justify-self:center; min-width:0; max-width:100%; }
+  .header > :nth-child(3) { grid-column:3; grid-row:1; justify-self:end; }
+  .header > :nth-child(1), .header > :nth-child(2), .header > :nth-child(3) {
+    position:relative !important; z-index:1;
+  }
+  .header > :nth-child(1), .header > :nth-child(3) { padding:8px 11px; font-size:16px; }
+  .header h1 { font-size:clamp(13px,3.6vw,17px) !important; line-height:1.25; letter-spacing:.1px; margin:0; }
+  .header .data-oggi { font-size:clamp(9px,2.5vw,11px) !important; line-height:1.3; margin-top:3px; }
+  .header .badge-live { font-size:9px !important; padding:2px 4px; margin-left:3px; }
+  #cruscotto-header-info {
+    position:static !important; transform:none !important;
+    grid-column:1 / 3; grid-row:2;
+    display:flex; flex-direction:column; align-items:flex-start;
+    gap:3px; min-width:0; max-width:100% !important; width:100%;
+    overflow:hidden; white-space:normal; text-align:left;
+    padding-left:2px; box-sizing:border-box;
+  }
+  #cruscotto-header-info #utente {
+    max-width:100% !important; font-size:11px !important;
+    white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+    display:block; width:100%; line-height:1.3;
+  }
+  #cruscotto-header-info #stato-dati {
+    max-width:100% !important; width:100%; font-size:10px !important;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin:0 !important; line-height:1.3;
+  }
+  #cruscotto-header-esci {
+    position:static !important; transform:none !important;
+    grid-column:3; grid-row:2;
+    display:flex; justify-content:flex-end; align-items:center;
+    min-width:0; max-width:100%;
+  }
+  #cruscotto-header-esci #btn-esci {
+    margin:0 !important; padding:7px 10px !important;
+    font-size:11px !important; white-space:nowrap;
+  }
+}
+@media (max-width:350px) {
+  .header { grid-template-columns:40px minmax(0,1fr) 40px; column-gap:4px; padding-inline:7px !important; }
+  .header > :nth-child(1), .header > :nth-child(3) { padding:7px 9px; }
+  .header h1 { font-size:12px !important; }
+  .header .data-oggi { font-size:9px !important; }
+}

@@ -8,7 +8,7 @@
     }
     const manifest = document.createElement('link');
     manifest.rel = 'manifest'; manifest.href = './manifest.json'; document.head.append(manifest);
-    import('./app.js?v=bottom-nav-v1-20261017').catch(() => {
+    import('./app.js?v=bottom-nav-home-clean-v1-20261017').catch(() => {
         stato.textContent = 'Impossibile caricare il cruscotto. Verifica che tutti i file siano presenti e riapri tramite Avvia Cruscotto.bat oppure dal sito aggiornato.';
     });
 })();

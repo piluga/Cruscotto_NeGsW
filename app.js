@@ -314,3 +314,16 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { 
   document.body.append(nav);
   document.addEventListener('keydown',e=>{if(e.key==='Escape' && panel)close();});
 })();
+
+// CRUSCOTTO_HOME_PULIZIA_V1 - solo visibilita grafica; eventi e logica invariati.
+(() => {
+    const manuale = document.getElementById('btn-manuale');
+    if (manuale) manuale.style.display = 'none';
+    const principale = document.getElementById('main-container');
+    const analisi = [...(principale?.querySelectorAll('button') || [])]
+        .find(btn => btn.textContent.trim().includes('Analisi Avanzata'));
+    if (analisi) analisi.style.display = 'none';
+    const installazione = [...document.querySelectorAll('button')]
+        .find(btn => btn.textContent.trim() === 'Installa Cruscotto');
+    if (installazione) installazione.style.display = 'none';
+})();

@@ -400,3 +400,63 @@ body:has(#main-container:not([hidden])) .container{padding-bottom:calc(94px + en
   .header h1{font-size:clamp(13px,3.6vw,17px)!important}
 }
 @media(min-width:651px){#cruscotto-bottom-nav{max-width:650px;margin:auto;border:1px solid #30363d;border-radius:14px 14px 0 0}}
+
+/* CRUSCOTTO_HYBRID_LUXURY_V1 — SOLA GRAFICA, MOBILE FIRST */
+:root{
+  --lux-gold:#c5a044;--lux-gold-glow:#e3b341;--lux-panel:#161b22;
+  --lux-border:rgba(197,160,68,.42);--lux-muted:#9ba7b6;
+}
+body{background:radial-gradient(ellipse at 50% -15%,rgba(197,160,68,.055),transparent 48%),#0d1117;color:#e5e7eb}
+.header{background:linear-gradient(180deg,#1d2025,#151a21);border-bottom:1px solid var(--lux-gold)!important;box-shadow:0 3px 15px rgba(0,0,0,.33),0 1px 7px rgba(197,160,68,.08)!important}
+.header h1{color:#fff;letter-spacing:.55px;text-shadow:0 1px 7px rgba(227,179,65,.12)}
+.header .data-oggi,.data-oggi{color:#c2ad7a}
+.header .btn-nav{border-color:rgba(197,160,68,.36)!important;background:linear-gradient(180deg,rgba(197,160,68,.12),rgba(197,160,68,.035))!important;color:#f7e7c0!important}
+.card,.accesso{border-color:var(--lux-border)!important;background:linear-gradient(165deg,#1b2027 0%,#161b22 82%)!important;box-shadow:0 5px 15px rgba(0,0,0,.22),inset 0 1px 0 rgba(227,179,65,.045)!important}
+.card-title{color:#d8c18a!important;letter-spacing:.5px}
+.valore-totale{color:#3fb950!important;text-shadow:0 0 16px rgba(63,185,80,.21)!important}
+.dato-box{background:linear-gradient(155deg,rgba(255,255,255,.035),rgba(0,0,0,.035))!important;border:1px solid rgba(197,160,68,.16)!important;border-radius:10px!important;min-width:0}
+.dato-box .dato-valore{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.list-item{border-bottom-color:rgba(197,160,68,.14)!important}
+.list-item strong{color:#f4f4f4;font-variant-numeric:tabular-nums}
+.btn-nav{border:1px solid rgba(197,160,68,.36)!important;background:linear-gradient(180deg,rgba(197,160,68,.16),rgba(197,160,68,.055))!important;color:#f3e0ac!important;border-radius:9px!important;transition:background-color .15s ease,border-color .15s ease}
+.btn-nav:active{background:rgba(197,160,68,.27)!important}
+.btn-nav:focus-visible,.cruscotto-bottom-tab:focus-visible{outline:2px solid #f1cb76;outline-offset:2px}
+.btn-aggiorna{background:linear-gradient(130deg,#2870cc,#388bfd)!important;box-shadow:0 3px 11px rgba(56,139,253,.20)!important}
+.modal-box{border-color:var(--lux-gold)!important;border-radius:14px!important;background:#181d24!important;box-shadow:0 14px 35px #0009,0 0 18px rgba(197,160,68,.11)}
+/* Login: dimensioni e funzioni preservate */
+.accesso{border-radius:14px!important}
+.accesso h2,.accesso h3{color:#f0e0b9}
+.accesso input{border-color:rgba(197,160,68,.34)!important;border-radius:9px!important}
+.accesso input:focus{outline:1px solid #c5a044;outline-offset:1px}
+#btn-accedi{border-radius:9px!important;box-shadow:0 3px 12px rgba(56,139,253,.14)}
+/* Barra inferiore esistente: stessa struttura, nuovi colori */
+#cruscotto-bottom-nav{background:linear-gradient(180deg,#202128,#12171c)!important;border-top:1px solid #c5a044!important;box-shadow:0 -4px 19px #0009,0 -1px 11px rgba(227,179,65,.14)!important}
+.cruscotto-bottom-tab{color:#d9d6cc!important;min-height:49px!important}
+.cruscotto-bottom-symbol{color:#dbbd76!important;text-shadow:0 0 9px rgba(227,179,65,.13)}
+.cruscotto-bottom-name{color:#e0d9c8!important}
+.cruscotto-bottom-tab:active,.cruscotto-bottom-tab:focus-visible{background:rgba(197,160,68,.17)!important;outline-color:#c5a044!important}
+.cruscotto-bottom-sheet{background:linear-gradient(155deg,#202329,#141920)!important;border-color:var(--lux-gold)!important;box-shadow:0 -12px 31px rgba(0,0,0,.66),0 0 17px rgba(227,179,65,.12)!important}
+.cruscotto-bottom-sheet-head h2{color:#f4d99a!important}
+.cruscotto-bottom-info-row{border-bottom-color:rgba(197,160,68,.22)!important}
+.cruscotto-bottom-info-row span{color:#c2ae82!important}
+.cruscotto-bottom-logout{border-color:#aa5555!important;color:#ffcdcd!important}
+/* Analisi avanzata: il pannello e' creato con style inline: non sovrascrivere layout o logica. */
+body > div[style*="z-index:99999"] > section{border-color:#c5a044!important;box-shadow:0 12px 30px rgba(0,0,0,.55),0 0 15px rgba(197,160,68,.12)!important}
+/* Priorita' smartphone: leggibilita' e tocchi, senza introdurre scroll laterale */
+@media(max-width:650px){
+  .container{gap:11px!important;padding:11px 10px calc(97px + env(safe-area-inset-bottom))!important}
+  .card{padding:13px 12px!important;border-radius:13px!important}
+  .grid-dati{gap:8px!important}
+  .dato-box{padding:10px 7px!important}
+  .dato-valore{font-size:clamp(17px,5.1vw,25px)!important}
+  .card-title{font-size:clamp(11px,3vw,13px)!important}
+  .valore-totale{font-size:clamp(29px,9vw,42px)!important}
+  .header{padding-left:9px!important;padding-right:9px!important}
+  .cruscotto-bottom-name{font-size:11px!important}
+  .cruscotto-bottom-symbol{font-size:23px!important}
+  .cruscotto-bottom-sheet{padding-left:16px!important;padding-right:16px!important}
+}
+@media(min-width:651px) and (max-width:1024px){.container{max-width:860px;width:100%;box-sizing:border-box;margin-inline:auto}.card{border-radius:14px}}
+@media(prefers-reduced-motion:reduce){.btn-nav{transition:none!important}}
+/* FINE CRUSCOTTO_HYBRID_LUXURY_V1 */
+

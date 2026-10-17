@@ -260,3 +260,61 @@ button:disabled { opacity: .5; cursor: default; }
 .list-item > span { overflow-wrap: anywhere; min-width: 0; }
 .movimento { display: grid; grid-template-columns: 1fr 2.5fr 1fr; padding: 10px 0; gap: 8px; border-bottom: 1px solid #333; }
 .movimento > span { overflow-wrap: anywhere; }
+
+/* CRUSCOTTO_LAYOUT_COMPACT_V1 - SOLO GRAFICA */
+/* Login: campi coerenti e checkbox + descrizione sulla stessa riga */
+.accesso { width:min(90%,420px); margin: clamp(14px,3vh,28px) auto; }
+.accesso form { gap:9px; }
+.accesso input { min-width:0; }
+#login-form #resta-connesso { width:17px !important; height:17px !important; min-width:17px !important; flex:0 0 17px; margin:0 !important; padding:0 !important; accent-color:var(--accent-blue); }
+#login-form label:has(> #resta-connesso) { display:flex !important; width:100%; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; gap:9px !important; margin:3px 0 5px !important; font-size:13px !important; line-height:1.3; white-space:normal; }
+#login-form #btn-accedi { width:100%; }
+#login-stato { line-height:1.35; }
+/* Home: barra account compatta; non rimuove pulsanti ne' informazioni */
+.sessione { padding:5px 14px !important; min-height:30px; gap:10px; flex-wrap:wrap; }
+#utente { font-size:13px; line-height:1.3; min-width:0; }
+#btn-esci { padding:7px 12px; font-size:13px; }
+#stato-dati { margin:3px 15px 5px !important; font-size:12px !important; line-height:1.3; color:#8b949e; }
+#stato-dati.errore { color:#ff9999 !important; }
+#stato-pwa { margin:3px 15px !important; font-size:12px; line-height:1.3; }
+#stato-pwa:empty { display:none !important; }
+.header { padding:9px 12px; }
+.container { padding-top:10px; gap:12px; }
+@media (max-width:520px) {
+ .sessione { padding:5px 10px !important; }
+ #utente { font-size:12px; }
+ #stato-dati { margin:3px 10px 5px !important; }
+ .header { padding:8px; }
+}
+
+/* CRUSCOTTO_HEADER_INLINE_V2 - SOLO PRESENTAZIONE */
+.header { position:relative; min-height:52px; box-sizing:border-box; }
+#cruscotto-header-info {
+  position:absolute; left:74px; top:50%; transform:translateY(-50%);
+  display:flex; align-items:center; gap:24px; max-width:calc(50% - 175px);
+  color:#e0e6ee; white-space:nowrap; font-size:12px; line-height:1.35;
+}
+#cruscotto-header-info #utente { font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:min(230px,25vw); }
+#cruscotto-header-info #stato-dati { margin:0 !important; font-size:11px !important; color:#98a7bd; white-space:nowrap; }
+#cruscotto-header-info #stato-dati.errore { color:#ff9999 !important; }
+#cruscotto-header-esci { position:absolute; right:72px; top:50%; transform:translateY(-50%); display:flex; align-items:center; }
+#cruscotto-header-esci #btn-esci { padding:7px 14px; margin:0; }
+/* La vecchia fascia non contiene piu' nodi visibili. E' conservata per gli ID e gli stati della sessione. */
+.sessione { display:none !important; }
+body:has(#sessione[hidden]) #cruscotto-header-info,
+body:has(#sessione[hidden]) #cruscotto-header-esci { display:none !important; }
+/* Mantieni il blocco centrale ben visibile sui monitor desktop. */
+.header > :not(#cruscotto-header-info):not(#cruscotto-header-esci) { position:relative; z-index:1; }
+@media (max-width:1050px) {
+  #cruscotto-header-info { gap:9px; align-items:flex-start; flex-direction:column; left:62px; max-width:25%; }
+  #cruscotto-header-info #utente { max-width:100%; }
+  #cruscotto-header-esci { right:62px; }
+}
+@media (max-width:650px) {
+  .header { min-height:60px; }
+  #cruscotto-header-info { left:49px; max-width:26%; font-size:10px; gap:2px; }
+  #cruscotto-header-info #utente, #cruscotto-header-info #stato-dati { font-size:10px !important; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+  #cruscotto-header-esci { right:49px; }
+  #cruscotto-header-esci #btn-esci { padding:6px 8px; font-size:11px; }
+  .header h1 { font-size:clamp(11px,2vw,16px); }
+}

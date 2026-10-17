@@ -149,12 +149,12 @@ const standalone = () => matchMedia('(display-mode: standalone)').matches || nav
 if (!standalone() && installStatus) {
     installStatus.textContent = !window.isSecureContext ?
         'Installazione disponibile solo su HTTPS o localhost.' :
-        'Se non compare Installa, usa il menu del browser oppure verifica che lâ€™app non sia gia installata.';
+        '';
 }
 window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault(); deferredInstall = event;
     if (!standalone()) installButton.hidden = false;
-    if (installStatus) installStatus.textContent = 'Cruscotto pronto per lâ€™installazione.';
+    if (installStatus) installStatus.textContent = '';
 });
 window.addEventListener('appinstalled', () => {
     deferredInstall = null; installButton.hidden = true;
@@ -224,4 +224,22 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { 
             contenuto.textContent = 'Analisi Avanzata non disponibile. Il Cruscotto principale continua a funzionare. Dettaglio: ' + (errore?.message || 'errore di caricamento');
         }
     });
+})();
+
+// CRUSCOTTO_HEADER_INLINE_V2: solo spostamento visuale di nodi esistenti.
+(() => {
+    const header = document.querySelector('.header');
+    const sessione = document.getElementById('sessione');
+    const utente = document.getElementById('utente');
+    const esci = document.getElementById('btn-esci');
+    const aggiornamento = document.getElementById('stato-dati');
+    if (!header || !sessione || !utente || !esci || !aggiornamento) return;
+    const info = document.createElement('div');
+    info.id = 'cruscotto-header-info';
+    const uscita = document.createElement('div');
+    uscita.id = 'cruscotto-header-esci';
+    // Sposta gli elementi originali: conservati gli ID e tutti i listener esistenti.
+    info.append(utente, aggiornamento);
+    uscita.append(esci);
+    header.append(info, uscita);
 })();

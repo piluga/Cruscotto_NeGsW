@@ -133,6 +133,36 @@ export function creaClient(config, { fetchImpl = globalThis.fetch.bind(globalThi
         if (gen !== generazione) throw erroreSessione();
         return dati;
     }
+    // CRUSCOTTO_LEGGI_ANDAMENTO_V1: due query indicizzate + eventuale live odierno. Solo GET autenticati.
+    async function leggiIntervallo(dal, al, { signal } = {}) {
+        const schema = /^\d{4}-\d{2}-\d{2}$/;
+        const parse = s => { const [y,m,d] = s.split('-').map(Number); const dt = new Date(Date.UTC(y,m-1,d)); return dt.toISOString().slice(0,10) === s ? dt : null; };
+        if (!schema.test(dal) || !schema.test(al) || !parse(dal) || !parse(al)) throw new Error('Date del periodo non valide.');
+        const giorni = (parse(al) - parse(dal)) / 86400000;
+        if (giorni < 0 || giorni > 64) throw new Error('Intervallo non consentito: massimo 65 giorni.');
+        const gen = generazione;
+        const idToken = await token();
+        if (gen !== generazione) throw erroreSessione();
+        const range = (archivio, campo) => {
+            const url = new URL(archivio + '.json', new URL('/', config.databaseURL));
+            url.searchParams.set('auth', idToken);
+            url.searchParams.set('orderBy', JSON.stringify(campo));
+            url.searchParams.set('startAt', JSON.stringify(dal));
+            url.searchParams.set('endAt', JSON.stringify(al));
+            return richiesta(url.href, {}, signal);
+        };
+        const oggi = new Date();
+        const local = `${oggi.getFullYear()}-${String(oggi.getMonth()+1).padStart(2,'0')}-${String(oggi.getDate()).padStart(2,'0')}`;
+        const live = (dal <= local && local <= al) ? (() => {
+            const url = new URL('vendite_live/' + local + '.json', new URL('/', config.databaseURL));
+            url.searchParams.set('auth', idToken);
+            return richiesta(url.href, {}, signal);
+        })() : Promise.resolve(null);
+        // Nessun dato parziale: se manca una lettura, il pannello segnala l'errore.
+        const dati = await Promise.all([live, range('storico_vendite', 'GIORNO'), range('storico_movimenti', 'data')]);
+        if (gen !== generazione) throw erroreSessione();
+        return dati;
+    }
     async function ripristina() {
         const salvata = leggiPersistenza();
         if (!salvata || !salvata.uid || !salvata.refreshToken || !salvata.email || !configurato) return null;
@@ -143,5 +173,5 @@ export function creaClient(config, { fetchImpl = globalThis.fetch.bind(globalThi
         sessione = { uid: salvata.uid, refreshToken: salvata.refreshToken, idToken: '', expiresAt: 0 };
         try { await token(); return { uid: sessione.uid, email: emailSessione }; }
         catch { esci(); return null; }
-    }    return { configurato, accedi, esci, ripristina, leggiGiorno, get autenticato() { return Boolean(sessione); } };
+    }    return { configurato, accedi, esci, ripristina, leggiGiorno, leggiIntervallo, get autenticato() { return Boolean(sessione); } };
 }

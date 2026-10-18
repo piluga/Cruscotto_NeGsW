@@ -1,5 +1,5 @@
 import { firebaseConfig } from './firebase-config.js?v=sicurezza-1';
-import { creaClient } from './firebase-client.js?v=cruscotto-fix-2';
+import { creaClient } from './firebase-client.js?v=andamento-v1-20261018';
 import { riepiloga } from './dati.js?v=statistiche-resi-v2-20261016';
 
 const client = creaClient(firebaseConfig);
@@ -256,7 +256,8 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { 
     ['info','ⓘ','Info'], ['setup','⚙','Setup']
   ];
   let panel = null;
-  const close = () => { if(panel) {panel.remove();panel=null;} };
+  let cleanupAndamento = null;
+  const close = () => { if(cleanupAndamento){cleanupAndamento();cleanupAndamento=null;} if(panel) {panel.remove();panel=null;} };
   function openPanel(title, populate) {
     close();
     panel = document.createElement('div'); panel.className = 'cruscotto-bottom-overlay';
@@ -285,9 +286,31 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { 
     if (main.hidden) return;
     if(kind==='home') {close(); main.scrollTo({top:0,behavior:'smooth'}); return;}
     if(kind==='analisi') {
-      close();
-      const button=[...main.querySelectorAll('button')].find(b=>b.textContent.trim().includes('Analisi Avanzata'));
-      if(button) button.click(); else openPanel('Analisi Avanzata',c=>{c.textContent='Pulsante Analisi Avanzata non disponibile.';});
+      openPanel('Analisi', c=>{
+        act(c,'📊 ANDAMENTO INCASSI',()=>{
+          openPanel('Andamento Incassi', async body=>{
+            body.textContent = 'Caricamento modulo Andamento Incassi…';
+            try {
+              const mod = await import('./andamento-incassi.js?v=andamento-v1-20261018');
+              if (!body.isConnected || !client.autenticato) return;
+              body.replaceChildren();
+              cleanupAndamento = mod.montaAndamento(body, {
+                leggiIntervallo: (dal,al,opts)=>client.leggiIntervallo(dal,al,opts),
+                riepiloga,
+                autenticato: ()=>client.autenticato
+              });
+            } catch (err) {
+              if (body.isConnected) body.textContent = 'Andamento Incassi non disponibile. Il Cruscotto principale continua a funzionare. ' + (err?.message || 'Errore caricamento.');
+              console.warn('Modulo Andamento Incassi:',err);
+            }
+          });
+        });
+        act(c,'📈 ANALISI AVANZATA',()=>{
+          close();
+          const button=[...main.querySelectorAll('button')].find(b=>b.textContent.trim().includes('Analisi Avanzata'));
+          if(button) button.click(); else openPanel('Analisi Avanzata',dest=>{dest.textContent='Pulsante Analisi Avanzata non disponibile.';});
+        });
+      });
       return;
     }
     if(kind==='aggiorna') {close(); document.getElementById('btn-manuale')?.click(); return;}
@@ -327,3 +350,5 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { 
         .find(btn => btn.textContent.trim() === 'Installa Cruscotto');
     if (installazione) installazione.style.display = 'none';
 })();
+
+// CRUSCOTTO_ANDAMENTO_INCASSI_V1 - menu Analisi con selezione lazy e compatibilità V2.

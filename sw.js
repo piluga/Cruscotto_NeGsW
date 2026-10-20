@@ -1,6 +1,6 @@
-const CACHE_NAME = 'cruscotto-a-multi-pwa-v1-andamento-v1';
+const CACHE_NAME = 'cruscotto-a-multi-pwa-v1-andamento-v1-icona-gold-v1-20261020';
 const ASSETS = ['./index.html', './avvio.js?v=locale-1', './style.css', './app.js?v=andamento-v1-20261018', './firebase-client.js?v=andamento-v1-20261018',
-    './firebase-config.js?v=sicurezza-1', './dati.js?v=statistiche-resi-v2-20261016', './manifest.json', './icone/dashboard192.png', './icone/dashboard512.png'];
+    './firebase-config.js?v=sicurezza-1', './dati.js?v=statistiche-resi-v2-20261016', './manifest.json', './icone/dashboard192.png?v=gold-20261020', './icone/dashboard512.png?v=gold-20261020'];
 const urls = new Set(ASSETS.map(path => new URL(path, self.location.href).href));
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS.map(path => new Request(path, { cache: 'reload' })))).then(() => self.skipWaiting()));
